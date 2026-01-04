@@ -1,0 +1,11 @@
+CREATE TABLE pedido (
+  id_pedido SERIAL PRIMARY KEY,
+  data_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status VARCHAR(20) NOT NULL,
+  valor_total NUMERIC(10,2) DEFAULT 0,
+  id_cliente INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_pedido_cliente
+    FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente)
+);

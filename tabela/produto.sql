@@ -1,0 +1,10 @@
+CREATE TABLE produto (
+  id_produto SERIAL PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL,
+  descricao TEXT,
+  unidade_medida VARCHAR(20),
+  preco_venda NUMERIC(10,2) NOT NULL,
+  ativo BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
