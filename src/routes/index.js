@@ -1,9 +1,17 @@
 import { Router } from "express";
+
 import produtosRoutes from "./produtos.routes.js";
-import movimentacaoEstoqueRoutes from "./movimentacao_routes.routes.js"
+import pedidosRoutes from "./pedidos.routes.js";
+import estoqueRoutes from "./estoque.routes.js";
+import movimentacaoRoutes from "./movimentacao.routes.js";
 
-const router = Router();
+const routes = Router();
 
-router.use("/produtos", produtosRoutes);
+routes.use("/produtos", produtosRoutes);
+routes.use("/pedidos", pedidosRoutes);
+routes.use("/estoque", estoqueRoutes);
+routes.use("/movimentacoes", movimentacaoRoutes);
 
-export default router;
+export default routes;
+
+
