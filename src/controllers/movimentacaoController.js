@@ -1,16 +1,24 @@
-import { registrarMovimentacao } from "../services/movimentacaoEstoqueService.js";
-
-export async function criarMovimentacao(req, res, next) {
+async function entrada(req, res, next) {
   try {
-    const dados = req.body;
-
-    const resultado = await registrarMovimentacao(dados);
-
-    return res.status(201).json({
-      message: "Movimentação registrada com sucesso",
-      movimentacao: resultado
-    });
-  } catch (error) {
-    next(error);
+    const resultado = await MovimentacaoEstoque.registrar(req.body);
+    res.status(201).json(resultado);
+  } catch (err) {
+    next(err);
   }
 }
+
+async function listar(req, res, next) {
+  try {
+    const movs = await MovimentacaoEstoque.listarPorProduto(
+      Number(req.params.idProduto)
+    );
+    res.json(movs);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export default {
+  entrada,
+  listar
+};

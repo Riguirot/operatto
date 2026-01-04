@@ -1,16 +1,19 @@
 import { Router } from "express";
-import { criarMovimentacao } from "../controllers/movimentacaoController.js";
+import MovimentacaoController from "../controllers/movimentacaoController.js";
 import { validate } from "../middlewares/validate.js";
 import { movimentacaoSchema } from "../validation/movimentacao.schema.js";
 
 const router = Router();
 
 router.post(
-  "/",
-  validate(movimentacaoSchema),
-  criarMovimentacao
+  "/entrada",
+  validate(movimentacaoSchema), // 👈 AQUI É O PONTO-CHAVE
+  MovimentacaoController.entrada // 👈 FUNÇÃO REAL
+);
+
+router.get(
+  "/produto/:idProduto",
+  MovimentacaoController.listar
 );
 
 export default router;
-
-

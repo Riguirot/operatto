@@ -1,9 +1,11 @@
 CREATE TABLE cliente (
   id_cliente SERIAL PRIMARY KEY,
   nome VARCHAR(100) NOT NULL,
+  documento VARCHAR(20),
   telefone VARCHAR(20),
-  endereco TEXT,
+  email VARCHAR(100),
   ativo BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+

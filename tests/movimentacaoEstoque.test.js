@@ -1,28 +1,33 @@
 import pool from "../config/database.js";
 
-class MovimentacaoEstoque {
-  static async registrar({
+export default class MovimentacaoEstoque {
+  static async create({
     id_produto,
     tipo,
     quantidade,
-    origem,
+    origem = null,
     observacao = null
   }) {
-    const { rows } = await pool.query(
-      `
+    const query = `
       INSERT INTO movimentacao_estoque
         (id_produto, tipo, quantidade, origem, observacao)
       VALUES
         ($1, $2, $3, $4, $5)
-      RETURNING *
-      `,
-      [id_produto, tipo, quantidade, origem, observacao]
-    );
+      RETURNING *;
+    `;
 
-    return rows[0];
+    const { rows } = await pool.query(query, [
+      id_produto,
+      tipo,
+      quantidade,
+      origem,
+      observacao
+    ]);
+
+    return rows[0]; // 👈 TEM que ser movimentação
   }
 
-  static async listarPorProduto(id_produto) {
+  static async findByProduto(id_produto) {
     const { rows } = await pool.query(
       `
       SELECT *
@@ -33,8 +38,7 @@ class MovimentacaoEstoque {
       [id_produto]
     );
 
-    return rows;
+    return rows; // 👈 SEMPRE array
   }
 }
 
-export default MovimentacaoEstoque;

@@ -13,5 +13,3 @@ routes.use("/estoque", estoqueRoutes);
 routes.use("/movimentacoes", movimentacaoRoutes);
 
 export default routes;
-
-
