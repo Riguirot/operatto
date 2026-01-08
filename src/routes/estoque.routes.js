@@ -1,10 +1,12 @@
+
+// placeholder
 import { Router } from "express";
+import EstoqueController from "../controllers/estoqueController.js";
 
 const router = Router();
 
-// placeholder
-router.get("/", (req, res) => {
-  res.json({ message: "Estoque route OK (em construção)" });
-});
+router.post("/entrada", EstoqueController.entrada);
+router.post("/reserva", EstoqueController.reservar);
+router.post("/baixa", EstoqueController.baixar);
 
 export default router;

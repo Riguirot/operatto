@@ -1,7 +1,7 @@
 import { Router } from "express";
 import MovimentacaoController from "../controllers/movimentacaoController.js";
 import { validate } from "../middlewares/validate.js";
-import { movimentacaoSchema } from "../validation/movimentacao.schema.js";
+import { movimentacaoSchema } from "../schemas/movimentacao.schema.js";
 
 const router = Router();
 

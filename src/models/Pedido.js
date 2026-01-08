@@ -1,7 +1,7 @@
 import pool from "../config/database.js";
 
 export default class Pedido {
-  static async criar({ id_cliente, status }) {
+  static async criar({ id_cliente, status = "ABERTO" }) {
     const { rows } = await pool.query(
       `
       INSERT INTO pedido (id_cliente, status)
@@ -17,7 +17,8 @@ export default class Pedido {
   static async buscarPorId(id_pedido) {
     const { rows } = await pool.query(
       `
-      SELECT * FROM pedido
+      SELECT *
+      FROM pedido
       WHERE id_pedido = $1
       `,
       [id_pedido]
@@ -29,7 +30,8 @@ export default class Pedido {
   static async listar() {
     const { rows } = await pool.query(
       `
-      SELECT * FROM pedido
+      SELECT *
+      FROM pedido
       ORDER BY data_pedido DESC
       `
     );
@@ -41,7 +43,8 @@ export default class Pedido {
     const { rows } = await pool.query(
       `
       UPDATE pedido
-      SET status = $1, updated_at = CURRENT_TIMESTAMP
+      SET status = $1,
+          updated_at = CURRENT_TIMESTAMP
       WHERE id_pedido = $2
       RETURNING *
       `,
@@ -51,3 +54,4 @@ export default class Pedido {
     return rows[0];
   }
 }
+

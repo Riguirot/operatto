@@ -1,10 +1,9 @@
 import { Router } from "express";
+import PedidoController from "../controllers/pedidoController.js";
 
 const router = Router();
 
-// placeholder
-router.get("/", (req, res) => {
-  res.json({ message: "Pedidos route OK (em construção)" });
-});
+router.get("/:id", PedidoController.buscarPedido);
+router.patch("/:id/status", PedidoController.atualizarStatus);
 
 export default router;
