@@ -1,4 +1,4 @@
-import Pedido from "../models/Pedido.js";
+/* import Pedido from "../models/Pedido.js";
 import AppError from "../utils/AppError.js";
 
 class PedidoService {
@@ -31,4 +31,7 @@ class PedidoService {
   }
 }
 
-export default PedidoService;
+export default PedidoService; */
+export { default } from "./pedidoService.ts";
+export * from "./pedidoService.ts";
+

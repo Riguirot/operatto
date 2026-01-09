@@ -1,7 +1,7 @@
 import Pedido from "../models/Pedido.js";
 import AppError from "../utils/AppError.js";
 
-import {
+import type {
   StatusPedido,
   AtualizarStatusPedidoInput
 } from "../schemas/pedido.schema";
