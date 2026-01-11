@@ -2,7 +2,7 @@ import pool from "../config/database.js";
 
 export default class Estoque {
   // Cria estoque para um produto (se não existir)
-  static async criarParaProduto(id_produto: number) {
+  static async criarParaProduto(id_produto: number): Promise<number> {
     const { rows } = await pool.query(
       `
       INSERT INTO estoque (id_produto)

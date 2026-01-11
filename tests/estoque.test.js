@@ -4,8 +4,8 @@
   });
 }); */
 
-import Produto from "../src/models/Produto.js";
-import Estoque from "../src/models/Estoque.js";
+import Produto from "@/models/Produto.js";
+import Estoque from "@/models/Estoque.js";
 
 describe("Model Estoque", () => {
   let produto;

@@ -5,7 +5,7 @@ describe("Produto", () => {
   });
 });
 */
-import Produto from "../src/models/Produto.js";
+import Produto from "@/models/Produto.js";
 
 describe("Model Produto", () => {
   it("deve criar um produto no banco", async () => {

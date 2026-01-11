@@ -83,35 +83,7 @@ paths:
           description: Entrada registrada com sucesso
         "400":
           description: Dados inválidos
-
-  /estoque/reserva:
-    post:
-      summary: Reserva de estoque
-      description: Reserva quantidade de estoque
-      tags:
-        - Estoque
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - id_produto
-                - quantidade
-              properties:
-                id_produto:
-                  type: integer
-                  example: 1
-                quantidade:
-                  type: integer
-                  example: 10
-      responses:
-        "200":
-          description: Estoque reservado
-        "400":
-          description: Estoque insuficiente
-
+          
   /estoque/baixa:
     post:
       summary: Baixa de estoque
