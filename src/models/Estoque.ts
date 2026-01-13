@@ -1,4 +1,4 @@
-import pool from "../config/database.js";
+import pool from "../config/database";
 
 export default class Estoque {
   // Cria estoque para um produto (se não existir)

@@ -2,20 +2,19 @@
   "name": "operatto",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "dist/index.js",
   "directories": {
     "test": "tests"
   },
-  "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "start": "node server.js",
-    "dev": "node server.js"
-  },
-  
+ "scripts": {
+  "build": "tsc",
+  "start": "node dist/index.js",
+  "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+  "test": "jest"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "babel": "^5.8.38",
     "csv-parser": "^3.2.0",

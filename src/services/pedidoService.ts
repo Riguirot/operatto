@@ -1,5 +1,5 @@
-import Pedido from "../models/Pedido.js";
-import AppError from "../utils/AppError.js";
+import Pedido from "../models/Pedido";
+import AppError from "../utils/AppError";
 
 import type {
   StatusPedido,

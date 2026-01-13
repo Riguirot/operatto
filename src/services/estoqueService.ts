@@ -1,6 +1,6 @@
-import MovimentacaoEstoque from "../models/movimentacaoEstoque.js";
-import Estoque from "../models/Estoque.js"; //allowImportingTsExtensions
-import AppError from "../utils/AppError.js";
+import MovimentacaoEstoque from "../models/movimentacaoEstoque";
+import Estoque from "../models/Estoque"; //allowImportingTsExtensions
+import AppError from "../utils/AppError";
 
 /**
  * Serviço de estoque
