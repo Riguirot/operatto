@@ -1,5 +1,5 @@
 import { Router } from "express";
-import PedidoController from "../controllers/pedidoController.js";
+import PedidoController from "../controllers/pedidoController";
 
 const router = Router();
 

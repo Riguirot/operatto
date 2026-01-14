@@ -5,7 +5,7 @@ import {
   buscarPorId,
   atualizar,
   remover
-} from "../controllers/produtoController.js";
+} from "../controllers/produtoController";
 
 const router = Router();
 
