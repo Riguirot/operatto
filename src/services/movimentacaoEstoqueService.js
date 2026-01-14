@@ -1,7 +1,14 @@
 import pool from "../config/database.js";
 
 export async function registrarMovimentacao(dados) {
-  const { id_produto, tipo, quantidade, origem, observacao } = dados;
+  const {
+    id_produto,
+    quantidade,
+    origem,
+    observacao,
+  } = dados;
+
+  const tipo = origem; // coerência com o banco
 
   const client = await pool.connect();
 
@@ -20,20 +27,24 @@ export async function registrarMovimentacao(dados) {
       tipo,
       quantidade,
       origem,
-      observacao
+      observacao,
     ]);
 
     const updateEstoque = `
       UPDATE estoque
-      SET quantidade_atual = 
-        CASE 
+      SET quantidade_atual =
+        CASE
           WHEN $2 = 'ENTRADA' THEN quantidade_atual + $3
           ELSE quantidade_atual - $3
         END
       WHERE id_produto = $1;
     `;
 
-    await client.query(updateEstoque, [id_produto, tipo, quantidade]);
+    await client.query(updateEstoque, [
+      id_produto,
+      tipo,
+      quantidade,
+    ]);
 
     await client.query("COMMIT");
 
@@ -44,4 +55,18 @@ export async function registrarMovimentacao(dados) {
   } finally {
     client.release();
   }
+}
+
+export async function listarPorProduto(idProduto) {
+  const { rows } = await pool.query(
+    `
+    SELECT *
+    FROM movimentacao_estoque
+    WHERE id_produto = $1
+    ORDER BY created_at DESC
+    `,
+    [idProduto]
+  );
+
+  return rows;
 }

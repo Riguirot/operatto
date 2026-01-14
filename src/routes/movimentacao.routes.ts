@@ -5,14 +5,16 @@ import { movimentacaoSchema } from "../schemas/movimentacao.schema";
 
 const router = Router();
 
+// POST /movimentacoes/entrada
 router.post(
   "/entrada",
-  validate(movimentacaoSchema), 
-  MovimentacaoController.entrada 
+  validate(movimentacaoSchema),
+  MovimentacaoController.entrada
 );
 
+// GET /movimentacoes/:idProduto
 router.get(
-  "/produto/:idProduto",
+  "/:idProduto",
   MovimentacaoController.listar
 );
 
