@@ -6,7 +6,7 @@ import {
   buscarProdutoPorId,
   atualizarProduto,
   removerProduto
-} from "../services/produtoService.js";
+} from "../services/produtoService";
 
 import type { ProdutoInput } from "../schemas/produto.schema";
 

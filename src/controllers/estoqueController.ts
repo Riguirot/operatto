@@ -1,10 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
-import EstoqueService from "../services/estoqueService.js";
+import EstoqueService from "../services/estoqueService";
 
 import {
   entradaEstoqueSchema,
   baixaEstoqueSchema,
-} from "../schemas/estoque.schema.js";
+} from "../schemas/estoque.schema";
 
 class EstoqueController {
   /**
