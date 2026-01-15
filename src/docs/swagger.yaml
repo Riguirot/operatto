@@ -1,4 +1,5 @@
 openapi: 3.0.0
+
 info:
   title: Operatto API
   description: API do mini ERP Operatto
@@ -8,23 +9,195 @@ servers:
   - url: http://localhost:3000
 
 tags:
+  - name: Health
+    description: Verificação de status da API
+  - name: Produtos
+    description: Cadastro e consulta de produtos
   - name: Pedidos
     description: Operações relacionadas a pedidos
   - name: Estoque
-    description: Operações de controle de estoque
+    description: Controle e movimentações de estoque
 
+# =========================
+# COMPONENTS (CONTRATOS)
+# =========================
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+
+    Produto:
+      type: object
+      required:
+        - nome
+        - unidade_medida
+        - preco_venda
+      properties:
+        nome:
+          type: string
+          minLength: 3
+          example: Pão francês
+        descricao:
+          type: string
+          example: Pão tradicional
+        unidade_medida:
+          type: string
+          example: UN
+        preco_venda:
+          type: number
+          example: 0.75
+
+    CriarPedido:
+      type: object
+      required:
+        - id_cliente
+        - itens
+      properties:
+        id_cliente:
+          type: integer
+          example: 10
+        itens:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required:
+              - id_produto
+              - quantidade
+            properties:
+              id_produto:
+                type: integer
+                example: 1
+              quantidade:
+                type: integer
+                example: 2
+
+    AtualizarStatusPedido:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - ABERTO
+            - EM_PRODUCAO
+            - FINALIZADO
+            - CANCELADO
+
+    EstoqueMovimentacao:
+      type: object
+      required:
+        - id_produto
+        - quantidade
+        - origem
+      properties:
+        id_produto:
+          type: integer
+          example: 1
+        quantidade:
+          type: integer
+          example: 10
+        origem:
+          type: string
+          example: ENTRADA
+        observacao:
+          type: string
+          example: Ajuste de estoque inicial
+
+# =========================
+# ROTAS
+# =========================
 paths:
-  /pedidos/{id}/status:
-    patch:
-      summary: Atualizar status do pedido
-      description: |
-        Atualiza o status de um pedido seguindo as regras de negócio:
-        - ABERTO → EM_PRODUCAO
-        - EM_PRODUCAO → FINALIZADO
-        - Qualquer status pode ir para CANCELADO
-        - FINALIZADO não pode ser alterado
+
+  # -------- HEALTH --------
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check da API
+      responses:
+        "200":
+          description: API funcionando
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  # -------- PRODUTOS --------
+  /produtos:
+    post:
+      tags:
+        - Produtos
+      summary: Criar produto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Produto"
+      responses:
+        "201":
+          description: Produto criado
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      tags:
+        - Produtos
+      summary: Listar produtos
+      responses:
+        "200":
+          description: Lista de produtos
+
+  # -------- PEDIDOS --------
+  /pedidos:
+    post:
       tags:
         - Pedidos
+      summary: Criar pedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CriarPedido"
+      responses:
+        "201":
+          description: Pedido criado
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /pedidos/{id}/status:
+    patch:
+      tags:
+        - Pedidos
+      summary: Atualizar status do pedido
+      description: |
+        Regras:
+        - ABERTO → EM_PRODUCAO
+        - EM_PRODUCAO → FINALIZADO
+        - Qualquer status → CANCELADO
+        - FINALIZADO não pode ser alterado
       parameters:
         - name: id
           in: path
@@ -37,79 +210,59 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - status
-              properties:
-                status:
-                  type: string
-                  enum:
-                    - ABERTO
-                    - EM_PRODUCAO
-                    - FINALIZADO
-                    - CANCELADO
+              $ref: "#/components/schemas/AtualizarStatusPedido"
       responses:
         "200":
-          description: Status atualizado com sucesso
+          description: Status atualizado
         "400":
           description: Transição inválida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Pedido não encontrado
 
-  /estoque/entrada:
+  # -------- ESTOQUE --------
+  /movimentacoes/entrada:
     post:
-      summary: Entrada de estoque
-      description: Registra entrada manual de estoque
       tags:
         - Estoque
+      summary: Entrada de estoque
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - id_produto
-                - quantidade
-              properties:
-                id_produto:
-                  type: integer
-                  example: 1
-                quantidade:
-                  type: integer
-                  example: 50
+              $ref: "#/components/schemas/EstoqueMovimentacao"
       responses:
-        "200":
-          description: Entrada registrada com sucesso
+        "201":
+          description: Entrada registrada
         "400":
           description: Dados inválidos
-          
-  /estoque/baixa:
-    post:
-      summary: Baixa de estoque
-      description: Baixa definitiva de estoque
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /movimentacoes/{idProduto}:
+    get:
       tags:
         - Estoque
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - id_produto
-                - quantidade
-              properties:
-                id_produto:
-                  type: integer
-                  example: 1
-                quantidade:
-                  type: integer
-                  example: 10
+      summary: Listar movimentações por produto
+      parameters:
+        - name: idProduto
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
       responses:
         "200":
-          description: Estoque baixado
-        "400":
-          description: Quantidade reservada insuficiente
-
-
+          description: Lista de movimentações
+        "404":
+          description: Produto não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"

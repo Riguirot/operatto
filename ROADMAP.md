@@ -6,7 +6,7 @@ Este roadmap define **a ordem oficial de execução** do projeto Operatto, segui
 
 ---
 
-## 🔹 FASE 1 — Transição completa para TypeScript (ATUAL)
+## 🔹 FASE 1 — Transição completa para TypeScript (ATUAL) ✅✅✅
 
 **Objetivo:** Backend previsível, tipado e com comportamento consistente em DEV e PROD.
 
@@ -28,7 +28,7 @@ Este roadmap define **a ordem oficial de execução** do projeto Operatto, segui
 
 ---
 
-## 🔹 FASE 2 — Estrutura mínima para produção teste
+## 🔹 FASE 2 — Estrutura mínima para produção teste 🟨🟨🟨
 
 **Objetivo:** Simular produção real de forma controlada.
 
@@ -52,7 +52,7 @@ Este roadmap define **a ordem oficial de execução** do projeto Operatto, segui
 
 ---
 
-## 🔹 FASE 3 — Produção teste + testes de serviço (inclui VM)
+## 🔹 FASE 3 — Produção teste + testes de serviço (inclui VM) 🟨🟨🟨
 
 **Objetivo:** Garantir confiança funcional e operacional.
 
@@ -70,8 +70,7 @@ Este roadmap define **a ordem oficial de execução** do projeto Operatto, segui
 * Nenhuma dependência implícita de ambiente local
 
 ---
-
-## 🔹 FASE 4 — Finalização completa do backend
+## 🔹 FASE 4 — Finalizar todo o backend 🟨🟨🟨
 
 **Objetivo:** Backend fechado, consistente e defendável tecnicamente.
 
@@ -90,7 +89,7 @@ Este roadmap define **a ordem oficial de execução** do projeto Operatto, segui
 
 ---
 
-## 🔹 FASE 5 — Planejamento do frontend
+## 🔹 FASE 5 — Planejamento do frontend 🟨🟨🟨
 
 **Objetivo:** Construir frontend sem retrabalho.
 
@@ -107,7 +106,7 @@ Este roadmap define **a ordem oficial de execução** do projeto Operatto, segui
 
 ---
 
-## 🔹 FASE 6 — Incrementos de cibersegurança no backend
+## 🔹 FASE 6 — Incrementos de cibersegurança no backend 🟨🟨🟨
 
 **Objetivo:** Garantir funcionamento seguro e confiável.
 
@@ -125,7 +124,7 @@ Este roadmap define **a ordem oficial de execução** do projeto Operatto, segui
 
 ---
 
-## 🔹 FASE 7 — Portfólio (GitHub, LinkedIn, apresentação)
+## 🔹 FASE 7 — Portfólio (GitHub, LinkedIn, apresentação) 🟨🟨🟨
 
 **Objetivo:** Transformar o Operatto em vitrine profissional.
 
