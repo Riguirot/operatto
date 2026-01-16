@@ -12,13 +12,13 @@ Este roadmap define **a ordem oficial de execução** do projeto Operatto, segui
 
 ### Tarefas
 
-* [ ] Migrar **models** restantes de JS → TS (ordem por dependência)
-* [ ] Garantir imports TS **sem extensões `.js`**
-* [ ] Padronizar `export default` vs `named exports`
-* [ ] Revisar `services` para remover dependências de JS legado
-* [ ] Garantir que `npm run dev` funcione sem acessar `dist/`
-* [ ] Garantir que `npm run build && npm run start` funcionem sempre
-* [ ] Remover arquivos JS obsoletos **somente após validação**
+* [✅] Migrar **models** restantes de JS → TS (ordem por dependência)
+* [✅] Garantir imports TS **sem extensões `.js`**
+* [✅] Padronizar `export default` vs `named exports`
+* [✅] Revisar `services` para remover dependências de JS legado
+* [✅] Garantir que `npm run dev` funcione sem acessar `dist/`
+* [✅] Garantir que `npm run build && npm run start` funcionem sempre
+* [✅] Remover arquivos JS obsoletos **somente após validação**
 
 ### Critério de conclusão
 

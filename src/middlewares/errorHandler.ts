@@ -9,31 +9,39 @@ export function errorHandler(
   _next: NextFunction
 ) {
   /**
-   * 🔎 Erros de validação (Zod)
+   * 🧪 Erros de validação (Zod)
    */
   if (err instanceof ZodError) {
     return res.status(400).json({
-      error: "Dados inválidos",
-      details: err.issues, // 👈 correto no Zod
+      error: {
+        message: "Dados inválidos",
+        details: err.issues,
+      },
     });
   }
 
   /**
-   * 🚨 Erros operacionais controlados
+   * 🚨 Erros operacionais controlados (AppError)
    */
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
-      error: err.message,
+      error: {
+        message: err.message,
+      },
     });
   }
 
   /**
-   * 🧯 Erro inesperado (500)
-   * Nunca vazar stack trace para o cliente
+   * 💥 Erro inesperado (500)
+   * Nunca vazar detalhes para o cliente
    */
-  console.error("Erro inesperado:", err);
+  if (process.env.NODE_ENV !== "test") {
+    console.error("Erro inesperado:", err);
+  }
 
   return res.status(500).json({
-    error: "Erro interno do servidor",
+    error: {
+      message: "Erro interno do servidor",
+    },
   });
 }

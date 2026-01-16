@@ -3,11 +3,13 @@ import { ZodSchema } from "zod";
 
 export function validate(schema: ZodSchema) {
   return (req: Request, _res: Response, next: NextFunction) => {
+    console.log("VALIDATE BODY:", req.body); // 👈 AQUI
+
     try {
-      req.body = schema.parse(req.body);
-      next();
+      schema.parse(req.body);
+      return next();
     } catch (error) {
-      next(error);
+      return next(error);
     }
   };
 }

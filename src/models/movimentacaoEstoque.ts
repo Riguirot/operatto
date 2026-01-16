@@ -4,6 +4,8 @@ export type TipoMovimentacaoEstoque =
   | "ENTRADA"
   | "BAIXA"
   | "RESERVA"
+  | "LIBERACAO_RESERVA"
+  | "BAIXA_RESERVADA"
   | "ESTORNO";
 
 interface RegistrarMovimentacaoInput {

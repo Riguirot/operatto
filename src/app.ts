@@ -6,6 +6,7 @@ import cors from "cors";
 import routes from "./routes";
 import { errorHandler } from "./middlewares/errorHandler";
 import { apiLimiter } from "./middlewares/rateLimit";
+import authRoutes from "./modules/auth"; 
 
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
@@ -31,6 +32,7 @@ app.use(express.json());
 
 // 🚦 Rotas
 app.use(routes);
+app.use('/auth', authRoutes);
 
 // 📘 Docs
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -38,4 +40,4 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // ❌ Erros SEMPRE por último
 app.use(errorHandler);
 
-export default app;
+export default app; 
