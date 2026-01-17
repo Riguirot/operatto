@@ -75,20 +75,27 @@ export default class Estoque {
    * Reserva de estoque
    */
   static async reservar(id_produto: number, quantidade: number) {
-    const { rows } = await pool.query(
-      `
-      UPDATE estoque
-      SET
-        quantidade_reservada = quantidade_reservada + $1,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id_produto = $2
-      RETURNING *
-      `,
-      [quantidade, id_produto]
-    );
+  const { rowCount, rows } = await pool.query(
+    `
+    UPDATE estoque
+    SET
+      quantidade_reservada = quantidade_reservada + $1,
+      updated_at = CURRENT_TIMESTAMP
+    WHERE
+      id_produto = $2
+      AND (quantidade_total - quantidade_reservada) >= $1
+    RETURNING *
+    `,
+    [quantidade, id_produto]
+  );
 
-    return rows[0];
+  if (rowCount === 0) {
+    throw new Error("ESTOQUE_INSUFICIENTE");
   }
+
+  return rows[0];
+}
+
 
   /**
    * Liberação de reserva

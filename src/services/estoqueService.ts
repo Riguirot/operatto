@@ -46,32 +46,22 @@ class EstoqueService {
    * Diminui o TOTAL (não usa reserva)
    */
   static async baixar({
-    id_produto,
-    quantidade,
-  }: {
-    id_produto: number;
-    quantidade: number;
-  }) {
-    if (quantidade <= 0) {
-      throw new AppError("Quantidade deve ser maior que zero", 400);
-    }
+  id_produto,
+  quantidade,
+}: {
+  id_produto: number;
+  quantidade: number;
+}) {
+  if (quantidade <= 0) {
+    throw new AppError("Quantidade deve ser maior que zero", 400);
+  }
 
-    const estoque = await Estoque.buscarPorProduto(id_produto);
+  const estoque = await Estoque.buscarPorProduto(id_produto);
+  if (!estoque) {
+    throw new AppError("Estoque não encontrado", 404);
+  }
 
-    if (!estoque) {
-      throw new AppError("Estoque não encontrado", 404);
-    }
-
-    const total = Number(estoque.quantidade_total);
-    const reservado = Number(estoque.quantidade_reservada);
-
-    if (total - reservado < quantidade) {
-      throw new AppError(
-        "Estoque insuficiente para baixa manual",
-        409
-      );
-    }
-
+  try {
     const atualizado = await Estoque.baixar(id_produto, quantidade);
 
     await MovimentacaoEstoque.registrar({
@@ -83,7 +73,13 @@ class EstoqueService {
     });
 
     return atualizado;
+  } catch {
+    throw new AppError(
+      "Estoque insuficiente para baixa manual",
+      409
+    );
   }
+}
 
   /**
    * 🔒 Reserva de estoque
@@ -95,6 +91,7 @@ class EstoqueService {
   }: {
     id_produto: number;
     quantidade: number;
+
   }) {
     if (quantidade <= 0) {
       throw new AppError("Quantidade inválida", 400);
@@ -117,10 +114,14 @@ class EstoqueService {
       );
     }
 
-    const atualizado = await Estoque.reservar(
-      id_produto,
-      quantidade
-    );
+    let atualizado;
+
+try {
+  atualizado = await Estoque.reservar(id_produto, quantidade);
+} catch {
+  throw new AppError("Estoque insuficiente para reserva", 409);
+}
+
 
     await MovimentacaoEstoque.registrar({
       id_produto,
@@ -137,32 +138,23 @@ class EstoqueService {
    * 🔓 Liberação de reserva
    * Pedido cancelado / ajuste
    */
-  static async liberarReserva({
-    id_produto,
-    quantidade,
-  }: {
-    id_produto: number;
-    quantidade: number;
-  }) {
-    if (quantidade <= 0) {
-      throw new AppError("Quantidade inválida", 400);
-    }
+ static async liberarReserva({
+  id_produto,
+  quantidade,
+}: {
+  id_produto: number;
+  quantidade: number;
+}) {
+  if (quantidade <= 0) {
+    throw new AppError("Quantidade inválida", 400);
+  }
 
-    const estoque = await Estoque.buscarPorProduto(id_produto);
+  const estoque = await Estoque.buscarPorProduto(id_produto);
+  if (!estoque) {
+    throw new AppError("Estoque não encontrado", 404);
+  }
 
-    if (!estoque) {
-      throw new AppError("Estoque não encontrado", 404);
-    }
-
-    const reservado = Number(estoque.quantidade_reservada);
-
-    if (reservado < quantidade) {
-      throw new AppError(
-        "Reserva insuficiente para liberação",
-        409
-      );
-    }
-
+  try {
     const atualizado = await Estoque.liberarReserva(
       id_produto,
       quantidade
@@ -177,38 +169,35 @@ class EstoqueService {
     });
 
     return atualizado;
+  } catch {
+    throw new AppError(
+      "Reserva insuficiente para liberação",
+      409
+    );
   }
+}
 
   /**
    * ✅ Confirmação de estoque reservado
    * Diminui TOTAL e RESERVADO
    */
   static async baixarReservado({
-    id_produto,
-    quantidade,
-  }: {
-    id_produto: number;
-    quantidade: number;
-  }) {
-    if (quantidade <= 0) {
-      throw new AppError("Quantidade inválida", 400);
-    }
+  id_produto,
+  quantidade,
+}: {
+  id_produto: number;
+  quantidade: number;
+}) {
+  if (quantidade <= 0) {
+    throw new AppError("Quantidade inválida", 400);
+  }
 
-    const estoque = await Estoque.buscarPorProduto(id_produto);
+  const estoque = await Estoque.buscarPorProduto(id_produto);
+  if (!estoque) {
+    throw new AppError("Estoque não encontrado", 404);
+  }
 
-    if (!estoque) {
-      throw new AppError("Estoque não encontrado", 404);
-    }
-
-    const reservado = Number(estoque.quantidade_reservada);
-
-    if (reservado < quantidade) {
-      throw new AppError(
-        "Reserva insuficiente para baixa",
-        409
-      );
-    }
-
+  try {
     const atualizado = await Estoque.baixarReservado(
       id_produto,
       quantidade
@@ -223,7 +212,13 @@ class EstoqueService {
     });
 
     return atualizado;
+  } catch {
+    throw new AppError(
+      "Reserva insuficiente para baixa",
+      409
+    );
   }
+}
 }
 
 export default EstoqueService;
