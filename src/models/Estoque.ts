@@ -1,4 +1,5 @@
 import pool from "../config/database";
+import AppError from "../utils/AppError";
 
 export default class Estoque {
   /**
@@ -7,7 +8,7 @@ export default class Estoque {
   static async criarParaProduto(id_produto: number) {
     const { rows } = await pool.query(
       `
-      INSERT INTO estoque (id_produto, quantidade_total, quantidade_reservada)
+      INSERT INTO estoque (id_produto, quantidade_atual, quantidade_reservada)
       VALUES ($1, 0, 0)
       RETURNING *
       `,
@@ -34,14 +35,14 @@ export default class Estoque {
   }
 
   /**
-   * Entrada de estoque (aumenta TOTAL)
+   * Entrada de estoque (aumenta quantidade_atual)
    */
   static async entrada(id_produto: number, quantidade: number) {
     const { rows } = await pool.query(
       `
       UPDATE estoque
       SET
-        quantidade_total = quantidade_total + $1,
+        quantidade_atual = quantidade_atual + $1,
         updated_at = CURRENT_TIMESTAMP
       WHERE id_produto = $2
       RETURNING *
@@ -53,14 +54,15 @@ export default class Estoque {
   }
 
   /**
-   * Baixa manual (diminui TOTAL, respeitando reservado)
+   * Baixa manual (diminui quantidade_atual)
+   * Regras de negócio ficam no Service
    */
   static async baixar(id_produto: number, quantidade: number) {
     const { rows } = await pool.query(
       `
       UPDATE estoque
       SET
-        quantidade_total = quantidade_total - $1,
+        quantidade_atual = quantidade_atual - $1,
         updated_at = CURRENT_TIMESTAMP
       WHERE id_produto = $2
       RETURNING *
@@ -72,66 +74,77 @@ export default class Estoque {
   }
 
   /**
-   * Reserva de estoque
+   * Reserva de estoque (BLINDADA contra concorrência)
    */
   static async reservar(id_produto: number, quantidade: number) {
-  const { rowCount, rows } = await pool.query(
-    `
-    UPDATE estoque
-    SET
-      quantidade_reservada = quantidade_reservada + $1,
-      updated_at = CURRENT_TIMESTAMP
-    WHERE
-      id_produto = $2
-      AND (quantidade_total - quantidade_reservada) >= $1
-    RETURNING *
-    `,
-    [quantidade, id_produto]
-  );
-
-  if (rowCount === 0) {
-    throw new Error("ESTOQUE_INSUFICIENTE");
-  }
-
-  return rows[0];
-}
-
-
-  /**
-   * Liberação de reserva
-   */
-  static async liberarReserva(id_produto: number, quantidade: number) {
-    const { rows } = await pool.query(
+    const { rowCount, rows } = await pool.query(
       `
       UPDATE estoque
       SET
-        quantidade_reservada = quantidade_reservada - $1,
+        quantidade_reservada = quantidade_reservada + $1,
         updated_at = CURRENT_TIMESTAMP
-      WHERE id_produto = $2
+      WHERE
+        id_produto = $2
+        AND (quantidade_atual - quantidade_reservada) >= $1
       RETURNING *
       `,
       [quantidade, id_produto]
     );
+
+    if (rowCount === 0) {
+      throw new AppError("Estoque insuficiente para reserva", 409);
+    }
 
     return rows[0];
   }
 
   /**
-   * Baixa de estoque reservado (confirmação)
+   * Liberação de reserva (BLINDADA)
    */
-  static async baixarReservado(id_produto: number, quantidade: number) {
-    const { rows } = await pool.query(
+  static async liberarReserva(id_produto: number, quantidade: number) {
+    const { rowCount, rows } = await pool.query(
       `
       UPDATE estoque
       SET
-        quantidade_total = quantidade_total - $1,
         quantidade_reservada = quantidade_reservada - $1,
         updated_at = CURRENT_TIMESTAMP
-      WHERE id_produto = $2
+      WHERE
+        id_produto = $2
+        AND quantidade_reservada >= $1
       RETURNING *
       `,
       [quantidade, id_produto]
     );
+
+    if (rowCount === 0) {
+      throw new AppError("Reserva insuficiente para liberação", 409);
+    }
+
+    return rows[0];
+  }
+
+  /**
+   * Baixa de estoque reservado (confirmação) (BLINDADA)
+   */
+  static async baixarReservado(id_produto: number, quantidade: number) {
+    const { rowCount, rows } = await pool.query(
+      `
+      UPDATE estoque
+      SET
+        quantidade_atual = quantidade_atual - $1,
+        quantidade_reservada = quantidade_reservada - $1,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE
+        id_produto = $2
+        AND quantidade_reservada >= $1
+      RETURNING *
+      `,
+      [quantidade, id_produto]
+    );
+
+    if (rowCount === 0) {
+      throw new AppError("Reserva insuficiente para baixa", 409);
+    }
 
     return rows[0];
   }

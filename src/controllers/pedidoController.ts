@@ -12,6 +12,18 @@ import {
  * Controller de pedidos
  */
 class PedidoController {
+
+  static async criar(req: Request, res: Response) {
+  const { id_cliente, itens } = req.body;
+
+  const pedido = await PedidoService.criarPedido({
+    id_cliente,
+    itens,
+  });
+
+  return res.status(201).json(pedido);
+}
+  
   static async buscarPedido(
     req: Request,
     res: Response,

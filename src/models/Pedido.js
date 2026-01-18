@@ -2,6 +2,9 @@ import pool from "../config/database.js";
 
 export default class Pedido {
   static async criar({ id_cliente, status = "ABERTO" }) {
+
+    console.log("SERVICE → id_cliente:", id_cliente);
+    
     const { rows } = await pool.query(
       `
       INSERT INTO pedido (id_cliente, status)

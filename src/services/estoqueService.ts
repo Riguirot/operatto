@@ -103,7 +103,7 @@ class EstoqueService {
       throw new AppError("Estoque não encontrado", 404);
     }
 
-    const total = Number(estoque.quantidade_total);
+    const total = Number(estoque.quantidade_atual);
     const reservado = Number(estoque.quantidade_reservada);
     const disponivel = total - reservado;
 

@@ -8,19 +8,34 @@ import type {
 } from "../schemas/pedido.schema";
 
 class PedidoService {
+  /* ===========================
+   * BUSCAR PEDIDO
+   * =========================== */
   static async buscarPorId(id_pedido: number) {
     return Pedido.buscarPorId(id_pedido);
   }
+
+  /* ===========================
+   * CRIAR PEDIDO
+   * =========================== */
   static async criarPedido({
-    cliente_id,
+    id_cliente,
     itens,
   }: {
-    cliente_id: number;
+    id_cliente: number;
     itens: {
       id_produto: number;
       quantidade: number;
     }[];
   }) {
+    console.log("[PedidoService] criarPedido chamado");
+    console.log("id_cliente:", id_cliente);
+    console.log("itens:", itens);
+
+    if (!id_cliente) {
+      throw new AppError("id_cliente é obrigatório", 400);
+    }
+
     if (!itens || itens.length === 0) {
       throw new AppError("Pedido sem itens", 400);
     }
@@ -29,35 +44,67 @@ class PedidoService {
 
     try {
       await client.query("BEGIN");
+      console.log("BEGIN transaction");
 
-      // 1️⃣ cria o pedido
+      /* 1️⃣ Criar pedido */
       const { rows: pedidoRows } = await client.query(
         `
-        INSERT INTO pedidos (cliente_id, status)
-        VALUES ($1, 'ABERTO')
+        INSERT INTO pedido (id_cliente, status, valor_total)
+        VALUES ($1, 'ABERTO', 0)
         RETURNING *
         `,
-        [cliente_id]
+        [id_cliente]
       );
 
       const pedido = pedidoRows[0];
+      console.log("Pedido criado:", pedido);
 
-      // 2️⃣ processa itens + reserva estoque
+      let valorTotal = 0;
+
+      /* 2️⃣ Criar itens + reservar estoque */
       for (const item of itens) {
         if (item.quantidade <= 0) {
           throw new AppError("Quantidade inválida no pedido", 400);
         }
 
-        // cria item do pedido
-        await client.query(
+        /* 🔎 Buscar preço do produto */
+        const { rows: produtoRows } = await client.query(
           `
-          INSERT INTO pedido_itens (id_pedido, id_produto, quantidade)
-          VALUES ($1, $2, $3)
+          SELECT id_produto, preco_venda
+          FROM produto
+          WHERE id_produto = $1
           `,
-          [pedido.id, item.id_produto, item.quantidade]
+          [item.id_produto]
         );
 
-        // 🔒 reserva estoque (SQL blindado)
+        if (produtoRows.length === 0) {
+          throw new AppError(
+            `Produto ${item.id_produto} não encontrado`,
+            404
+          );
+        }
+
+        const precoUnitario = produtoRows[0].preco_venda;
+        const valorItem = precoUnitario * item.quantidade;
+        valorTotal += valorItem;
+
+        /* 📦 Criar item do pedido */
+        await client.query(
+          `
+          INSERT INTO item_pedido
+            (id_pedido, id_produto, quantidade, preco_unitario)
+          VALUES
+            ($1, $2, $3, $4)
+          `,
+          [
+            pedido.id_pedido,
+            item.id_produto,
+            item.quantidade,
+            precoUnitario,
+          ]
+        );
+
+        /* 🔒 Reservar estoque (blindado) */
         const { rowCount } = await client.query(
           `
           UPDATE estoque
@@ -66,7 +113,7 @@ class PedidoService {
             updated_at = CURRENT_TIMESTAMP
           WHERE
             id_produto = $2
-            AND (quantidade_total - quantidade_reservada) >= $1
+            AND (quantidade_atual - quantidade_reservada) >= $1
           `,
           [item.quantidade, item.id_produto]
         );
@@ -78,21 +125,39 @@ class PedidoService {
           );
         }
 
-        // movimentação
+        /* 🧾 Movimentação */
         await client.query(
           `
           INSERT INTO movimentacao_estoque
-          (id_produto, tipo, quantidade, origem, observacao)
-          VALUES ($1, 'RESERVA', $2, 'PEDIDO', 'Reserva ao criar pedido')
+            (id_produto, tipo, quantidade, origem, observacao)
+          VALUES
+            ($1, 'RESERVA', $2, 'PEDIDO', 'Reserva ao criar pedido')
           `,
           [item.id_produto, item.quantidade]
         );
       }
 
-      await client.query("COMMIT");
+      /* 💰 Atualizar valor total do pedido */
+      await client.query(
+        `
+        UPDATE pedido
+        SET valor_total = $1
+        WHERE id_pedido = $2
+        `,
+        [valorTotal, pedido.id_pedido]
+      );
 
-      return pedido;
+      await client.query("COMMIT");
+      console.log("COMMIT transaction");
+
+      return {
+        ...pedido,
+        valor_total: valorTotal,
+      };
     } catch (error) {
+      console.error("🔥 ERRO AO CRIAR PEDIDO");
+      console.error(error);
+
       await client.query("ROLLBACK");
       throw error;
     } finally {
@@ -100,6 +165,9 @@ class PedidoService {
     }
   }
 
+  /* ===========================
+   * ATUALIZAR STATUS DO PEDIDO
+   * =========================== */
   static async atualizarStatusPedido({
     id_pedido,
     status,
@@ -127,29 +195,16 @@ class PedidoService {
         CANCELADO: [],
       };
 
-      if (
-        !transicoesPermitidas[statusAtual].includes(status)
-      ) {
-        throw new AppError(
-          "Transição de status não permitida",
-          400
-        );
+      if (!transicoesPermitidas[statusAtual].includes(status)) {
+        throw new AppError("Transição de status não permitida", 400);
       }
 
-      /**
-       * 🔒 REGRAS DE NEGÓCIO COM ESTOQUE
-       */
-      if (statusAtual === "ABERTO" && status === "EM_PRODUCAO") {
-        // 👉 reserva de estoque já deve existir
-        // aqui só garantimos coerência
-      }
-
+      /* FINALIZAR → BAIXAR ESTOQUE */
       if (status === "FINALIZADO") {
-        // 🔥 CONFIRMA BAIXA DO ESTOQUE RESERVADO
         const { rows: itens } = await client.query(
           `
           SELECT id_produto, quantidade
-          FROM pedido_itens
+          FROM item_pedido
           WHERE id_pedido = $1
           `,
           [id_pedido]
@@ -160,7 +215,7 @@ class PedidoService {
             `
             UPDATE estoque
             SET
-              quantidade_total = quantidade_total - $1,
+              quantidade_atual = quantidade_atual - $1,
               quantidade_reservada = quantidade_reservada - $1,
               updated_at = CURRENT_TIMESTAMP
             WHERE
@@ -180,20 +235,21 @@ class PedidoService {
           await client.query(
             `
             INSERT INTO movimentacao_estoque
-            (id_produto, tipo, quantidade, origem, observacao)
-            VALUES ($1, 'BAIXA_RESERVADA', $2, 'PEDIDO', 'Finalização de pedido')
+              (id_produto, tipo, quantidade, origem, observacao)
+            VALUES
+              ($1, 'BAIXA_RESERVADA', $2, 'PEDIDO', 'Finalização do pedido')
             `,
             [item.id_produto, item.quantidade]
           );
         }
       }
 
+      /* CANCELAR → LIBERAR ESTOQUE */
       if (status === "CANCELADO") {
-        // 🔓 LIBERA RESERVA
         const { rows: itens } = await client.query(
           `
           SELECT id_produto, quantidade
-          FROM pedido_itens
+          FROM item_pedido
           WHERE id_pedido = $1
           `,
           [id_pedido]
@@ -223,8 +279,9 @@ class PedidoService {
           await client.query(
             `
             INSERT INTO movimentacao_estoque
-            (id_produto, tipo, quantidade, origem, observacao)
-            VALUES ($1, 'LIBERACAO_RESERVA', $2, 'PEDIDO', 'Cancelamento de pedido')
+              (id_produto, tipo, quantidade, origem, observacao)
+            VALUES
+              ($1, 'LIBERACAO_RESERVA', $2, 'PEDIDO', 'Cancelamento do pedido')
             `,
             [item.id_produto, item.quantidade]
           );

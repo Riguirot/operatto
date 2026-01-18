@@ -3,7 +3,7 @@ import PedidoService from "../src/services/PedidoService";
 describe("Concorrência de pedidos", () => {
   it("não deve permitir duas reservas acima do estoque", async () => {
     const payload = {
-      cliente_id: 1,
+      id_cliente: 1,
       itens: [
         {
           id_produto: 1,
