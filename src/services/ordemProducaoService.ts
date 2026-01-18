@@ -1,4 +1,4 @@
-import OrdemProducao from "../models/OrdemProducao";
+import OrdemProducao from "@/models/OrdemProducao";
 
 interface CriarOrdemDTO {
   id_produto: number;
@@ -21,8 +21,11 @@ class OrdemProducaoService {
   }
 
   static async finalizar(id_ordem: number) {
-    return OrdemProducao.finalizar(id_ordem);
-  }
+  return OrdemProducao.atualizarStatus(
+    id_ordem,
+    "FINALIZADA"
+  );
+}
 
   static async listar() {
     return OrdemProducao.listar();

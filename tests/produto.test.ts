@@ -1,19 +1,12 @@
-/*
-describe("Produto", () => {
-  it("placeholder", () => {
-    expect(true).toBe(true);
-  });
-});
-*/
-import Produto from "@/models/Produto.js";
+import Produto from "@/models/Produto";
 
 describe("Model Produto", () => {
   it("deve criar um produto no banco", async () => {
-    const produto = await Produto.create({
+    const produto = await (Produto as any).create({
       nome: "Bolacha Teste",
       descricao: "Produto de teste",
       unidade_medida: "UN",
-      preco_venda: 2.5
+      preco_venda: 2.5,
     });
 
     expect(produto).toHaveProperty("id_produto");
@@ -21,7 +14,7 @@ describe("Model Produto", () => {
   });
 
   it("deve listar produtos", async () => {
-    const produtos = await Produto.findAll();
+    const produtos = await (Produto as any).findAll();
     expect(Array.isArray(produtos)).toBe(true);
   });
 });

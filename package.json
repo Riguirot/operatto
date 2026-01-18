@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "API do mini ERP Operatto",
   "main": "dist/index.js",
+  "type": "module",
   "directories": {
     "test": "tests"
   },
@@ -10,7 +11,7 @@
     "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "jest",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "check": "tsc --noEmit && jest"
   },
   "keywords": [],
@@ -26,6 +27,7 @@
     "express": "5.2.1",
     "express-rate-limit": "8.2.1",
     "helmet": "8.1.0",
+    "nodenext": "^0.0.2",
     "pd": "0.8.1",
     "pg": "8.16.3",
     "swagger-ui-express": "5.0.1",
@@ -37,8 +39,10 @@
     "@types/express": "5.0.6",
     "@types/jest": "30.0.0",
     "@types/node": "25.0.3",
+    "@types/pg": "^8.16.0",
     "@types/swagger-ui-express": "4.1.8",
     "@types/yamljs": "0.2.34",
+    "cross-env": "^10.1.0",
     "jest": "30.2.0",
     "supertest": "7.1.4",
     "ts-jest": "29.4.6",

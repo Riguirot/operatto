@@ -1,11 +1,11 @@
-import pool from "../config/database";
-import Pedido from "../models/Pedido";
-import AppError from "../utils/AppError";
+import pool from "@/config/database";
+import Pedido, { EstadoFSM } from "@/models/Pedido";
+import AppError from "@/utils/AppError";
 
 import type {
   StatusPedido,
   AtualizarStatusPedidoInput,
-} from "../schemas/pedido.schema";
+} from "@/schemas/pedido.schema";
 
 class PedidoService {
   /* ===========================
@@ -183,17 +183,20 @@ class PedidoService {
         throw new AppError("Pedido não encontrado", 404);
       }
 
-      const statusAtual: StatusPedido = pedido.status;
+      const statusAtual = pedido.status as EstadoFSM;
 
-      const transicoesPermitidas: Record<
-        StatusPedido,
-        StatusPedido[]
-      > = {
-        ABERTO: ["EM_PRODUCAO", "CANCELADO"],
-        EM_PRODUCAO: ["FINALIZADO", "CANCELADO"],
-        FINALIZADO: [],
-        CANCELADO: [],
+      const transicoesPermitidas: Record<EstadoFSM, EstadoFSM[]> = {
+          ABERTO: ["CONFIRMADO", "CANCELADO"],
+
+          CONFIRMADO: ["EM_PRODUCAO", "CANCELADO"],
+
+          EM_PRODUCAO: ["FINALIZADO", "CANCELADO"],
+
+          FINALIZADO: [],
+
+          CANCELADO: [],
       };
+
 
       if (!transicoesPermitidas[statusAtual].includes(status)) {
         throw new AppError("Transição de status não permitida", 400);

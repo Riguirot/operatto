@@ -1,4 +1,4 @@
-import PedidoService from "../src/services/PedidoService";
+import PedidoService from "@/services/pedidoService";
 
 describe("Concorrência de pedidos", () => {
   it("não deve permitir duas reservas acima do estoque", async () => {

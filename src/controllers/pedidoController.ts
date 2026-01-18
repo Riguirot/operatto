@@ -5,38 +5,49 @@ import PedidoService from "../services/pedidoService";
 import {
   atualizarStatusPedidoSchema,
   pedidoIdParamSchema,
-  StatusPedido
+  StatusPedido,
 } from "../schemas/pedido.schema";
 
 /**
  * Controller de pedidos
  */
 class PedidoController {
+  /**
+   * Criar novo pedido
+   */
+  static async criar(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id_cliente, itens } = req.body;
 
-  static async criar(req: Request, res: Response) {
-  const { id_cliente, itens } = req.body;
+      const pedido = await PedidoService.criarPedido({
+        id_cliente,
+        itens,
+      });
 
-  const pedido = await PedidoService.criarPedido({
-    id_cliente,
-    itens,
-  });
+      return res.status(201).json(pedido);
+    } catch (error) {
+      next(error);
+    }
+  }
 
-  return res.status(201).json(pedido);
-}
-  
+  /**
+   * Buscar pedido por ID
+   */
   static async buscarPedido(
     req: Request,
     res: Response,
     next: NextFunction
   ) {
     try {
+      pedidoIdParamSchema.parse(req.params);
+
       const { id } = req.params;
 
       const pedido = await PedidoService.buscarPorId(Number(id));
 
       if (!pedido) {
         return res.status(404).json({
-          mensagem: "Pedido não encontrado"
+          mensagem: "Pedido não encontrado",
         });
       }
 
@@ -46,6 +57,9 @@ class PedidoController {
     }
   }
 
+  /**
+   * Atualizar status do pedido
+   */
   static async atualizarStatus(
     req: Request,
     res: Response,
@@ -62,13 +76,13 @@ class PedidoController {
       const pedidoAtualizado =
         await PedidoService.atualizarStatusPedido({
           id_pedido: Number(id),
-          status
+          status,
         });
 
       return res.status(200).json({
         id: pedidoAtualizado.id_pedido,
         status: pedidoAtualizado.status,
-        mensagem: "Status do pedido atualizado com sucesso"
+        mensagem: "Status do pedido atualizado com sucesso",
       });
     } catch (error) {
       next(error);

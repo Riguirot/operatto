@@ -1,28 +1,23 @@
-/* describe("Estoque", () => {
-  it("placeholder", () => {
-    expect(true).toBe(true);
-  });
-}); */
+import Produto from "@/models/Produto";
+import Estoque from "@/models/Estoque";
 
-import Produto from "@/models/Produto.js";
-import Estoque from "@/models/Estoque.js";
 
 describe("Model Estoque", () => {
-  let produto;
+  let produto: any;
 
   beforeAll(async () => {
-    produto = await Produto.create({
+    produto = await (Produto as any).create({
       nome: "Produto Estoque Teste",
       descricao: "Produto para teste de estoque",
       unidade_medida: "UN",
-      preco_venda: 1.99
+      preco_venda: 1.99,
     });
   });
 
   it("deve criar estoque para um produto", async () => {
-    const estoque = await Estoque.create({
+    const estoque = await (Estoque as any).create({
       id_produto: produto.id_produto,
-      quantidade_atual: 10
+      quantidade_atual: 10,
     });
 
     expect(estoque).toHaveProperty("id_estoque");
@@ -30,14 +25,14 @@ describe("Model Estoque", () => {
   });
 
   it("deve buscar estoque pelo id_produto", async () => {
-    const estoque = await Estoque.findByProduto(produto.id_produto);
+    const estoque = await (Estoque as any).findByProduto(produto.id_produto);
 
     expect(estoque).not.toBeNull();
     expect(Number(estoque.quantidade_atual)).toBe(10);
   });
 
   it("deve atualizar a quantidade do estoque", async () => {
-    const estoqueAtualizado = await Estoque.updateQuantidade(
+    const estoqueAtualizado = await (Estoque as any).updateQuantidade(
       produto.id_produto,
       25
     );
@@ -45,4 +40,3 @@ describe("Model Estoque", () => {
     expect(Number(estoqueAtualizado.quantidade_atual)).toBe(25);
   });
 });
-

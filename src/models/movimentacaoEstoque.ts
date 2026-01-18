@@ -1,30 +1,51 @@
 import pool from "../config/database";
 
-export type TipoMovimentacaoEstoque =
+/**
+ * Tipos de movimentação de estoque
+ */
+export type TipoMovimentacao =
   | "ENTRADA"
   | "BAIXA"
   | "RESERVA"
   | "LIBERACAO_RESERVA"
-  | "BAIXA_RESERVADA"
-  | "ESTORNO";
+  | "BAIXA_RESERVADA";
 
-interface RegistrarMovimentacaoInput {
+/**
+ * Input para criar movimentação
+ */
+export interface CriarMovimentacaoInput {
   id_produto: number;
-  tipo: TipoMovimentacaoEstoque;
+  tipo: TipoMovimentacao;
   quantidade: number;
-  origem: string;
+  origem: string | null;
   observacao?: string | null;
 }
 
-class MovimentacaoEstoque {
-  static async registrar({
+/**
+ * Row retornada do banco
+ */
+export interface MovimentacaoEstoqueRow {
+  id_movimentacao: number;
+  id_produto: number;
+  tipo: TipoMovimentacao;
+  quantidade: number;
+  origem: string | null;
+  observacao: string | null;
+  created_at: Date;
+}
+
+export default class MovimentacaoEstoque {
+  /**
+   * Criar movimentação de estoque (método base)
+   */
+  static async create({
     id_produto,
     tipo,
     quantidade,
-    origem,
+    origem = null,
     observacao = null,
-  }: RegistrarMovimentacaoInput) {
-    const { rows } = await pool.query(
+  }: CriarMovimentacaoInput): Promise<MovimentacaoEstoqueRow> {
+    const { rows } = await pool.query<MovimentacaoEstoqueRow>(
       `
       INSERT INTO movimentacao_estoque
         (id_produto, tipo, quantidade, origem, observacao)
@@ -38,8 +59,23 @@ class MovimentacaoEstoque {
     return rows[0];
   }
 
-  static async listarPorProduto(id_produto: number) {
-    const { rows } = await pool.query(
+  /**
+   * Alias semântico usado pelo Service
+   * (regra de negócio chama "registrar")
+   */
+  static async registrar(
+    dados: CriarMovimentacaoInput
+  ): Promise<MovimentacaoEstoqueRow> {
+    return this.create(dados);
+  }
+
+  /**
+   * Listar movimentações por produto
+   */
+  static async findByProduto(
+    id_produto: number
+  ): Promise<MovimentacaoEstoqueRow[]> {
+    const { rows } = await pool.query<MovimentacaoEstoqueRow>(
       `
       SELECT *
       FROM movimentacao_estoque
@@ -52,5 +88,3 @@ class MovimentacaoEstoque {
     return rows;
   }
 }
-
-export default MovimentacaoEstoque;

@@ -1,5 +1,6 @@
-import pool from "../config/database";
-import type { ProdutoInput } from '../schemas/produto.schema';
+import pool from "@/config/database";
+import type { ProdutoInput } from "@/schemas/produto.schema";
+
 
 /**
  * CREATE

@@ -2,7 +2,12 @@ openapi: 3.0.0
 
 info:
   title: Operatto API
-  description: API do mini ERP Operatto
+  description: |
+    Operatto API - Sistema de pedidos multicanal.
+
+  Modos de pedido:
+  - WHATSAPP_INTERATIVO: pedido completo via WhatsApp
+  - WEB_ONLY: WhatsApp envia apenas link para pedido Web
   version: 1.0.0
 
 servers:
@@ -32,52 +37,75 @@ components:
           type: array
           items:
             type: object
+    OrderChannelMode:
+      type: string
+      enum:
+        - WHATSAPP_INTERATIVO
+        - WEB_ONLY
+      example: WHATSAPP_INTERATIVO
 
     Produto:
-      type: object
-      required:
-        - nome
-        - unidade_medida
-        - preco_venda
-      properties:
-        nome:
-          type: string
-          minLength: 3
-          example: Pão francês
-        descricao:
-          type: string
-          example: Pão tradicional
-        unidade_medida:
-          type: string
-          example: UN
-        preco_venda:
-          type: number
-          example: 0.75
+  type: object
+  required:
+    - nome
+    - unidade_medida
+    - preco_venda
+  properties:
+    id:
+      type: integer
+      example: 1
+    nome:
+      type: string
+      minLength: 3
+      example: Bolacha Tradicional de Coco
+    descricao:
+      type: string
+      example: Bolacha tradicional de coco
+    unidade_medida:
+      type: string
+      example: UN
+    preco_venda:
+      type: number
+      example: 3.50
+
+  examples:
+    ProdutosBasicos:
+      value:
+        - id: 1
+          nome: Bolacha Tradicional de Coco
+        - id: 2
+          nome: Rosquinha de Coco
+        - id: 3
+          nome: Cacetinho de Coco
+        - id: 4
+          nome: Bolacha Amanteigada
+        - id: 5
+          nome: Bolacha Mimosa
 
     CriarPedido:
-      type: object
-      required:
-        - id_cliente
-        - itens
-      properties:
-        id_cliente:
-          type: integer
-          example: 10
-        itens:
-          type: array
-          minItems: 1
-          items:
-            type: object
-            required:
-              - id_produto
-              - quantidade
-            properties:
-              id_produto:
-                type: integer
-                example: 1
-              quantidade:
-                type: integer
-                example: 2
+  type: object
+  required:
+    - clienteId
+    - itens
+  properties:
+    clienteId:
+      type: integer
+      example: 1
+    itens:
+      type: array
+      minItems: 1
+      items:
+        type: object
+        required:
+          - produtoId
+          - quantidade
+        properties:
+          produtoId:
+            type: integer
+            example: 1
+          quantidade:
+            type: integer
+            example: 20
 
     AtualizarStatusPedido:
       type: object
@@ -266,3 +294,79 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  # -------- CRIAR PEDIDO via Web --------
+  /pedidos/web:
+  post:
+    tags:
+      - Pedidos
+    summary: Criar pedido via página web
+    description: |
+      Cria um pedido completo via Web.
+      Usa o mesmo core de pedidos (FSM) do WhatsApp.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - clienteId
+              - itens
+            properties:
+              clienteId:
+                type: integer
+                example: 1
+              itens:
+                type: array
+                minItems: 1
+                items:
+                  type: object
+                  required:
+                    - produtoId
+                    - quantidade
+                  properties:
+                    produtoId:
+                      type: integer
+                      example: 1
+                    quantidade:
+                      type: integer
+                      example: 20
+    responses:
+      "201":
+        description: Pedido criado com sucesso
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mensagem:
+                  type: string
+                  example: Pedido criado com sucesso
+                pedido:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 123
+                    clienteId:
+                      type: integer
+                      example: 1
+                    itens:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          produtoId:
+                            type: integer
+                            example: 1
+                          quantidade:
+                            type: integer
+                            example: 20
+                    status:
+                      type: string
+                      example: CONFIRMADO
+      "400":
+        description: Payload inválido
+      "409":
+        description: Estoque insuficiente
+
