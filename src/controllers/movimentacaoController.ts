@@ -1,18 +1,19 @@
 import { Request, Response, NextFunction } from "express";
+import {
+  registrarMovimentacao,
+  listarPorProduto,
+} from "../services/movimentacaoEstoqueService";
 
-// service ainda em JS
-const MovimentacaoEstoque = require(
-  "../services/movimentacaoEstoqueService"
-);
-
+/**
+ * 📥 Registrar movimentação de estoque
+ */
 async function entrada(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
   try {
-    const resultado =
-      await MovimentacaoEstoque.registrarMovimentacao(req.body);
+    const resultado = await registrarMovimentacao(req.body);
 
     return res.status(201).json(resultado);
   } catch (err) {
@@ -20,6 +21,9 @@ async function entrada(
   }
 }
 
+/**
+ * 📄 Listar movimentações por produto
+ */
 async function listar(
   req: Request,
   res: Response,
@@ -28,10 +32,9 @@ async function listar(
   try {
     const idProduto = Number(req.params.idProduto);
 
-    const movs =
-      await MovimentacaoEstoque.listarPorProduto(idProduto);
+    const movimentacoes = await listarPorProduto(idProduto);
 
-    return res.json(movs);
+    return res.json(movimentacoes);
   } catch (err) {
     return next(err);
   }

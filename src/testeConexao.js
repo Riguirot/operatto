@@ -1,4 +1,4 @@
-import pool from "./config/database.js";
+import pool from "./config/database";
 
 async function testar() {
   const result = await pool.query("SELECT NOW()");
