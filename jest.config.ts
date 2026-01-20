@@ -6,8 +6,19 @@ const config: Config = {
   preset: "ts-jest/presets/default-esm",
   extensionsToTreatAsEsm: [".ts"],
 
+  transform: {
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        useESM: true,
+        tsconfig: "tsconfig.test.json",
+      },
+    ],
+  },
+
   moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/src/$1",
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+    "@/(.*)$": "<rootDir>/src/$1",
   },
 
   testMatch: [
@@ -15,12 +26,8 @@ const config: Config = {
     "**/tests/**/*.spec.ts",
   ],
 
-  globals: {
-    "ts-jest": {
-      useESM: true,
-      tsconfig: "tsconfig.test.json",
-    },
-  },
+  setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
+
 };
 
 export default config;
